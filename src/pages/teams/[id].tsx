@@ -10,6 +10,7 @@ export default function TeamDetailPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
+  console.log("team");
   useEffect(() => {
     if (id) {
       loadTeam();

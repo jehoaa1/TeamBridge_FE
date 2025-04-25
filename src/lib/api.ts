@@ -75,6 +75,7 @@ export const getEmployees = async (): Promise<User[]> => {
 };
 
 export const getTeam = async (id: string): Promise<TeamDetail> => {
-  const response = await axios.get<any>(`${API_BASE_URL}/teams/${id}`);
+  const response = await api.get<any>(`${API_BASE_URL}/teams/${id}`);
+  console.log(response.data);
   return response.data;
 };

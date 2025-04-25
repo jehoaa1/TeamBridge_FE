@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { createTeam, getEmployees, getTeams } from "../../lib/api";
+import { getEmployees, getTeams } from "../../lib/api";
 import { Team, User } from "../../types/auth";
 
 export default function Teams() {
@@ -29,8 +29,6 @@ export default function Teams() {
     setIsLoading(true);
     try {
       const [teamsData, employeesData] = await Promise.all([getTeams(), getEmployees()]);
-      console.log("Teams loaded:", teamsData);
-      console.log("Employees loaded:", employeesData);
 
       // 검색어로 필터링
       const filteredTeams =
@@ -61,7 +59,6 @@ export default function Teams() {
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const createdTeam = await createTeam(newTeam);
       setIsCreating(false);
       setNewTeam({ name: "", description: "", memberIds: [] });
       loadData();
