@@ -23,11 +23,28 @@ export interface RegisterEmployeeRequest {
   grade: number;
 }
 
-export interface Team {
+export interface Member {
+  _id: string;
   id: string;
+  email: string;
+  name: string;
+  age: number;
+  position: string;
+  hireDate: string;
+  emergencyContact: string;
+}
+
+export interface Team {
+  _id: string;
   name: string;
   description: string;
-  members: User[];
+  memberCount: number;
+  createdAt: string;
+}
+
+export interface TeamDetail extends Team {
+  members: Member[];
+  updatedAt: string;
 }
 
 export interface CreateTeamRequest {

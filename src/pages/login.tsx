@@ -17,7 +17,7 @@ const LoginPage = () => {
       const response = await login({ email, password });
       localStorage.setItem("accessToken", response.access_token);
       localStorage.setItem("user", JSON.stringify(response.user));
-      router.push("/teams");
+      router.replace("/teams");
     } catch (err) {
       setError("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
     }
@@ -79,6 +79,7 @@ const LoginPage = () => {
                       placeholder="이메일"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      autoComplete="username"
                     />
                   </div>
                   <div>
@@ -94,6 +95,7 @@ const LoginPage = () => {
                       placeholder="비밀번호"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      autoComplete="current-password"
                     />
                   </div>
                 </div>

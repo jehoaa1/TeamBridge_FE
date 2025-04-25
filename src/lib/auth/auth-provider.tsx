@@ -3,16 +3,15 @@
  * 인증된 사용자 정보를 얻거나 로그인 페이지로 이동
  */
 import Spinner from "@/components/shared/spinner";
-import { Session } from "next-auth";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import React, { createContext, PropsWithChildren, useContext, useEffect } from "react";
+import React, { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
+import { User } from "../../types/auth";
 
 interface IAuthProviderProps {}
 
 interface IAuthContext {
   initialized: boolean;
-  session: Session;
+  user: User | null;
 }
 
 export const AuthContext = createContext<IAuthContext | null>(null);
@@ -33,22 +32,36 @@ const isPublicPage = (pathname: string) => {
 
 const AuthProvider = ({ children }: PropsWithChildren<IAuthProviderProps>) => {
   const router = useRouter();
-  const { data: session, status } = useSession();
-  const loading = status === "loading";
+  const [initialized, setInitialized] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    if (loading) {
-      return;
+    const userStr = localStorage.getItem("user");
+    const token = localStorage.getItem("accessToken");
+
+    if (userStr && token) {
+      try {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+        if (isPublicPage(router.pathname)) {
+          router.replace("/teams");
+        }
+      } catch (err) {
+        console.error("Auth Error:", err);
+        localStorage.removeItem("user");
+        localStorage.removeItem("accessToken");
+        if (!isPublicPage(router.pathname)) {
+          router.replace("/login");
+        }
+      }
+    } else if (!isPublicPage(router.pathname)) {
+      router.replace("/login");
     }
 
-    if (session && isPublicPage(router.pathname)) {
-      router.push("/");
-    } else if (!session && !isPublicPage(router.pathname)) {
-      router.push("/login");
-    }
-  }, [loading, router, session]);
+    setInitialized(true);
+  }, [router.pathname]);
 
-  if (loading || (session && isPublicPage(router.pathname))) {
+  if (!initialized) {
     return <Spinner />;
   }
 
@@ -56,11 +69,11 @@ const AuthProvider = ({ children }: PropsWithChildren<IAuthProviderProps>) => {
     return <>{children}</>;
   }
 
-  if (!session?.user) {
+  if (!user) {
     return <Spinner />;
   }
 
-  return <AuthContext.Provider value={{ initialized: true, session }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ initialized, user }}>{children}</AuthContext.Provider>;
 };
 
 export default React.memo(AuthProvider);

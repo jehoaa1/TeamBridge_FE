@@ -1,5 +1,13 @@
 import axios from "axios";
-import { CreateTeamRequest, LoginRequest, LoginResponse, RegisterEmployeeRequest, Team, User } from "../types/auth";
+import {
+  CreateTeamRequest,
+  LoginRequest,
+  LoginResponse,
+  RegisterEmployeeRequest,
+  Team,
+  TeamDetail,
+  User,
+} from "../types/auth";
 
 interface ApiResponse<T> {
   statusCode: number;
@@ -28,7 +36,6 @@ api.interceptors.request.use((config) => {
 // Response interceptor to handle data wrapper
 api.interceptors.response.use(
   (response: any) => {
-    console.log("API Response:", response);
     // 응답이 { data: { data: actualData } } 형태인 경우를 처리
     if (response.data && typeof response.data === "object" && "data" in response.data) {
       return { ...response, data: response.data.data };
@@ -47,22 +54,27 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
 };
 
 export const registerEmployee = async (data: RegisterEmployeeRequest): Promise<User> => {
-  const response = await api.post<ApiResponse<User>>("/employees", data);
-  return response.data.data;
+  const response = await api.post<any>("/employees", data);
+  return response.data;
 };
 
 export const createTeam = async (data: CreateTeamRequest): Promise<Team> => {
   console.log("Creating team with data:", data);
-  const response = await api.post<ApiResponse<Team>>("/teams", data);
-  return response.data.data;
+  const response = await api.post<any>("/teams", data);
+  return response.data;
 };
 
 export const getTeams = async (): Promise<Team[]> => {
-  const response = await api.get<ApiResponse<Team[]>>("/teams");
-  return response.data.data;
+  const response = await api.get<any>("/teams");
+  return response.data;
 };
 
 export const getEmployees = async (): Promise<User[]> => {
-  const response = await api.get<ApiResponse<User[]>>("/employees");
-  return response.data.data;
+  const response = await api.get<any>("/employees");
+  return response.data;
+};
+
+export const getTeam = async (id: string): Promise<TeamDetail> => {
+  const response = await axios.get<any>(`${API_BASE_URL}/teams/${id}`);
+  return response.data;
 };

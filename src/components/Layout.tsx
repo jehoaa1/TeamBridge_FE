@@ -24,43 +24,43 @@ export default function Layout({ children }: LayoutProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const userStr = localStorage.getItem("user");
-        const token = localStorage.getItem("accessToken");
-        console.log("Layout - Current Path:", router.pathname);
-        console.log("Layout - Token:", token);
-        console.log("Layout - UserStr:", userStr);
+    const userStr = localStorage.getItem("user");
+    const token = localStorage.getItem("accessToken");
 
-        if (userStr && token) {
-          const userData = JSON.parse(userStr);
-          console.log("Layout - UserData:", userData);
-          setUser(userData);
-        } else if (router.pathname !== "/login") {
-          console.log("Layout - Redirecting to login (no auth)");
-          router.push("/login");
-        }
-        setIsLoading(false);
-      } catch (err) {
-        console.error("Layout - Auth Error:", err);
-        localStorage.removeItem("user");
-        localStorage.removeItem("accessToken");
+    try {
+      if (!userStr || !token) {
         if (router.pathname !== "/login") {
-          router.push("/login");
+          router.replace("/login");
         }
-        setIsLoading(false);
-      }
-    };
+      } else {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
 
-    checkAuth();
-  }, []); // router.pathname 의존성 제거
+        // 로그인 페이지에 있을 때만 teams로 리다이렉트
+        if (router.pathname === "/login") {
+          router.replace("/teams");
+        }
+      }
+    } catch (err) {
+      console.error("Layout - Auth Error:", err);
+      localStorage.removeItem("user");
+      localStorage.removeItem("accessToken");
+      if (router.pathname !== "/login") {
+        router.replace("/login");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, []); // 의존성 배열을 비워서 마운트 시에만 실행
 
   const handleLogout = () => {
+    console.log("handleLogout");
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
     router.push("/login");
   };
 
+  // 로그인 페이지는 별도 처리
   if (router.pathname === "/login") {
     return <>{children}</>;
   }
@@ -69,7 +69,8 @@ export default function Layout({ children }: LayoutProps) {
     return <div>Loading...</div>;
   }
 
-  if (!user && router.pathname !== "/login") {
+  // 인증되지 않은 경우
+  if (!user) {
     return null;
   }
 
@@ -125,9 +126,53 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </nav>
 
-      <main className="py-10">
-        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">{children}</div>
-      </main>
+      <div className="flex">
+        {/* Left Navigation Bar */}
+        <div className="w-64 min-h-screen bg-white shadow-sm">
+          <div className="flex flex-col h-full">
+            <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+              <div className="flex items-center flex-shrink-0 px-4">
+                <img className="h-8 w-auto" src="/logo.png" alt="TeamBridge" />
+              </div>
+              <nav className="mt-5 flex-1 px-2 space-y-1">
+                <Link
+                  href="/teams"
+                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                    router.pathname === "/teams"
+                      ? "bg-indigo-100 text-indigo-600"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  팀 관리
+                </Link>
+                <Link
+                  href="/employees"
+                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                    router.pathname.startsWith("/employees")
+                      ? "bg-indigo-100 text-indigo-600"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  직원 관리
+                </Link>
+              </nav>
+            </div>
+            <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
+              <div className="flex items-center">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">{user?.name}</p>
+                  <p className="text-xs text-gray-500">{getUserRole(user?.grade || 0)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <main className="flex-1 py-6">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }
