@@ -9,9 +9,15 @@ import { User } from "../../types/auth";
 
 interface IAuthProviderProps {}
 
+interface Session {
+  accessToken: string;
+  user?: any;
+}
+
 interface IAuthContext {
   initialized: boolean;
   user: User | null;
+  session: Session | null; // 또는 session 타입 정의에 맞게!
 }
 
 export const AuthContext = createContext<IAuthContext | null>(null);
@@ -34,6 +40,7 @@ const AuthProvider = ({ children }: PropsWithChildren<IAuthProviderProps>) => {
   const router = useRouter();
   const [initialized, setInitialized] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<{ accessToken: string } | null>(null);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -43,6 +50,7 @@ const AuthProvider = ({ children }: PropsWithChildren<IAuthProviderProps>) => {
       try {
         const userData = JSON.parse(userStr);
         setUser(userData);
+        setSession({ accessToken: token });
         if (isPublicPage(router.pathname)) {
           router.replace("/teams");
         }
@@ -73,7 +81,7 @@ const AuthProvider = ({ children }: PropsWithChildren<IAuthProviderProps>) => {
     return <Spinner />;
   }
 
-  return <AuthContext.Provider value={{ initialized, user }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ initialized, user, session }}>{children}</AuthContext.Provider>;
 };
 
 export default React.memo(AuthProvider);
