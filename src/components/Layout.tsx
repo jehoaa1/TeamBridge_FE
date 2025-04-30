@@ -169,8 +169,8 @@ export default function Layout({ children }: LayoutProps) {
         </div>
 
         {/* Main Content */}
-        <main className="flex-1 py-6">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">{children}</div>
+        <main className="flex-1 min-h-screen py-6">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[calc(100vh-4rem)]">{children}</div>
         </main>
       </div>
     </div>
